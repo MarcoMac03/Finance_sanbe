@@ -30,6 +30,11 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(projects.shared)
+            implementation("io.ktor:ktor-client-core:3.0.0")
+            implementation("io.ktor:ktor-client-content-negotiation:3.0.0")
+            implementation("io.ktor:ktor-serialization-kotlinx-json:3.0.0")
+            implementation("io.ktor:ktor-client-cio:3.0.0")
+            implementation("androidx.compose.material:material-icons-extended:1.6.0")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
