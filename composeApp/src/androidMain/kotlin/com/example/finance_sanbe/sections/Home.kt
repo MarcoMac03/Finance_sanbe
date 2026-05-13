@@ -1,6 +1,7 @@
 package com.example.finance_sanbe.sections
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +41,7 @@ fun Home() {
         isLoading = true
         try {
             itemStats = NetworkClient.client.get("${NetworkClient.BASE_URL}/itemsAll").body()
+            Toast.makeText(context, "Lista aggiornata", Toast.LENGTH_SHORT).show()
         } catch(e: Exception) {
             if(e !is CancellationException) {
                 Log.e("Network error", "Errore ricerca: ${e.message}", e)
@@ -55,7 +57,7 @@ fun Home() {
     ) {
         Text(text = "Benvenuto nel marketplace di San Bernardo", color = PrimaryColor, fontSize = 20.sp, fontWeight = FontWeight.Bold)
         Box(Modifier.padding(10.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
-            Text(text = "Lista degli articoli", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(text = "Lista degli articoli", color = PrimaryColor, fontSize = 18.sp, fontWeight = FontWeight.Bold)
             itemStats.forEach { item ->
                 Text(text = item.name, fontSize = 16.sp)
             }
