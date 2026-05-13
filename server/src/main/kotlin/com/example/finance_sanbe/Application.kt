@@ -35,9 +35,12 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.times
 import org.jetbrains.exposed.sql.update
 
 fun main() {
-    embeddedServer(Netty, port = SERVER_PORT, host = "0.0.0.0", module = Application::module)
+    val port = System.getenv("PORT")?.toInt() ?: 8080
+    embeddedServer(Netty, port = port, host = "0.0.0.0", module = Application::module)
         .start(wait = true)
 }
+
+// https://finance-sanbe.onrender.com URL per la route
 
 fun Application.module() {
     DatabaseFactory.init()
@@ -70,15 +73,26 @@ fun Application.module() {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            transaction {
+            val itemId = transaction {
                 Items.insert {
                     it[name] = item.name
                     it[initialPrice] = item.price
                     it[actualPrice] = item.price
                     it[initialQuantity] = item.quantity
                     it[actualQuantity] = item.quantity
+                } get Items.id
+            }
+            val insert = transaction {
+                val teams = Team.selectAll().map { it[Team.id] }
+                teams.forEach { teamId ->
+                    TeamItems.insert {
+                        it[TeamItems.itemId] = itemId
+                        it[TeamItems.teamId] = teamId
+                        it[quantity] = 0
+                    }
                 }
             }
+
             call.respond(HttpStatusCode.Created)
         }
 
