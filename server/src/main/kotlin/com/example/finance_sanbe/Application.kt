@@ -45,7 +45,7 @@ fun Application.module() {
     DatabaseFactory.init()
 
     install(ContentNegotiation) {
-        json(Json { ignoreUnknownKeys = true })
+        json()
     }
 
     routing {
