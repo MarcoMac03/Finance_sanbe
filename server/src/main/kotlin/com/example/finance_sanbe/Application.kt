@@ -63,7 +63,11 @@ fun Application.module() {
                         )
                     }
             }
-            call.respond(items)
+            if(items.isEmpty()) {
+                call.respond(emptyList<ItemStats>())
+            } else {
+                call.respond(items)
+            }
         }
 
         post("/item") {
