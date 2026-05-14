@@ -12,22 +12,12 @@ import io.ktor.server.routing.*
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
-import io.ktor.serialization.kotlinx.json.*
-import kotlinx.serialization.json.Json
 import com.example.finance_sanbe.Database.TeamItems
 import com.example.finance_sanbe.Database.Items
-import org.jetbrains.exposed.sql.lowerCase
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.Clock
-import kotlinx.datetime.toLocalDateTime
 import com.example.finance_sanbe.Database.Team
 import io.ktor.serialization.kotlinx.json.json
 import org.jetbrains.exposed.sql.and
-import com.example.finance_sanbe.NewItem
-import com.example.finance_sanbe.MarketAction
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.div
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.greaterEq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.minus
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.plus
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.times
@@ -49,6 +39,7 @@ fun Application.module() {
     }
 
     routing {
+        // getting all items from the DB
         get("/itemsAll") {
             val items = transaction {
                 Items.selectAll()
@@ -70,9 +61,10 @@ fun Application.module() {
             }
         }
 
+        // Insert new item in the DB
         post("/item") {
             val item = call.receive<NewItem>()
-            if(item.name.isBlank() || item.price == 0 || item.quantity == 0) {
+            if(item.name.isBlank() || item.price < 0 || item.quantity <= 0) {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
@@ -85,7 +77,7 @@ fun Application.module() {
                     it[actualQuantity] = item.quantity
                 } get Items.id
             }
-            val insert = transaction {
+            transaction {
                 val teams = Team.selectAll().map { it[Team.id] }
                 teams.forEach { teamId ->
                     TeamItems.insert {
@@ -99,6 +91,7 @@ fun Application.module() {
             call.respond(HttpStatusCode.Created)
         }
 
+        // route to buy or sell an item
         post("/market") {
             val action = call.receive<MarketAction>()
             if(action.type == ActionType.BUY) {

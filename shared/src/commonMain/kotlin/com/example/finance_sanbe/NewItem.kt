@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class NewItem (
-    val name: String,
-    val quantity: Int,
-    val price: Int
+    val name: String = "",
+    val quantity: Int = 0,
+    val price: Int = 0
 )
