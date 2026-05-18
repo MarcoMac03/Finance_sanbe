@@ -171,5 +171,14 @@ fun Application.module() {
             }
             call.respond(items)
         }
+
+        get("/teamCredits") {
+            val id = call.parameters["id"]?.toIntOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val credits = transaction {
+                Team.select(Team.credits)
+                    .where{ Team.id eq id }.first()[Team.credits]
+            }
+            call.respond(credits)
+        }
     }
 }

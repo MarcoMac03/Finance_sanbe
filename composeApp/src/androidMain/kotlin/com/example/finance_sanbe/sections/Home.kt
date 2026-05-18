@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,8 +45,6 @@ fun Home() {
     var itemStats by remember { mutableStateOf<List<ItemStats>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
     var trigger by remember { mutableIntStateOf(0) }
-    // quando devo far aggiornare la lista passo nel componente figlio una funzione che aggiorna trigger
-    // Figlio(onAddItem -> {trigger ++})
 
     LaunchedEffect(trigger) {
         isLoading = true
@@ -62,37 +59,52 @@ fun Home() {
         }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize().background(BackgroundColor).padding(20.dp, end = 20.dp, top = 20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BackgroundColor)
+            .padding(top = 30.dp, bottom = 20.dp, start = 30.dp, end = 30.dp)
     ) {
-        Card(
-            Modifier.padding(18.dp).fillMaxWidth()
-            .border(border = BorderStroke(0.dp, color = BackgroundColor), shape = AbsoluteRoundedCornerShape(15.dp)),
-            colors = CardDefaults.cardColors(containerColor = SecondaryColor)
-        ) {
-            Text(text = "Benvenuti nel marketplace di San Bernardo",
-                color = PrimaryColor,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                lineHeight = 42.sp,
-                modifier = Modifier.padding(start = 30.dp, end = 30.dp, top = 10.dp, bottom = 10.dp)
-            )
-        }
-        Spacer(modifier = Modifier.padding(30.dp))
+        item {
+            Card(
+                Modifier
+                    .padding(18.dp)
+                    .fillMaxWidth()
+                    .border(
+                        border = BorderStroke(0.dp, color = BackgroundColor),
+                        shape = AbsoluteRoundedCornerShape(15.dp)
+                    ),
+                colors = CardDefaults.cardColors(containerColor = SecondaryColor)
+            ) {
+                Text(text = "Benvenuti nel marketplace di San Bernardo",
+                    color = PrimaryColor,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 42.sp,
+                    modifier = Modifier.padding(start = 30.dp, end = 30.dp, top = 10.dp, bottom = 10.dp)
+                )
+            }
+            Spacer(modifier = Modifier.padding(30.dp))
 
-        Box(Modifier.padding(10.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
-            Text(text = "Lista degli articoli", color = PrimaryColor, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Box(Modifier
+                .padding(10.dp)
+                .fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Text(text = "Lista degli articoli", color = PrimaryColor, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            }
+            Spacer(modifier = Modifier.padding(10.dp))
         }
-        Spacer(modifier = Modifier.padding(10.dp))
+
         if (isLoading) {
-            Text(text = "Caricamento in corso...", color = PrimaryColor, fontSize = 16.sp)
+            item {
+                Text(text = "Caricamento in corso...", color = PrimaryColor, fontSize = 16.sp)
+            }
         } else if (itemStats.isNotEmpty()) {
-            LazyColumn(modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 16.dp, start = 30.dp, end = 30.dp)) {
                 item {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(text = "Oggetto", modifier = Modifier.weight(2f), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
@@ -103,7 +115,9 @@ fun Home() {
 
                 items(itemStats) { item ->
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 10.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(text = item.name, modifier = Modifier.weight(1f), fontSize = 16.sp, color = PrimaryColor)
@@ -111,9 +125,10 @@ fun Home() {
                     }
                     HorizontalDivider(thickness = 0.5.dp, color = PrimaryColor.copy(alpha = 0.5f))
                 }
-            }
         } else {
-            Text(text = "Nessun articolo disponibile", color = PrimaryColor, fontSize = 16.sp)
+            item {
+                Text(text = "Nessun articolo disponibile", color = PrimaryColor, fontSize = 16.sp)
+            }
         }
     }
 }

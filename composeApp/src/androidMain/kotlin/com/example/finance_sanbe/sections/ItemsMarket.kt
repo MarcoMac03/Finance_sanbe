@@ -16,6 +16,7 @@ import com.example.finance_sanbe.PrimaryColor
 
 @Composable
 fun ItemsMarket() {
+
     Column(
         modifier = Modifier.fillMaxSize().background(BackgroundColor).padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally

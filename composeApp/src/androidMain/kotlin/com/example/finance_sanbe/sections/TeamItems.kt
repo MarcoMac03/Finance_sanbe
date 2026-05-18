@@ -2,6 +2,7 @@ package com.example.finance_sanbe.sections
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -25,6 +27,7 @@ import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -51,6 +54,7 @@ import com.example.finance_sanbe.ItemStats
 import com.example.finance_sanbe.NetworkClient
 import com.example.finance_sanbe.PrimaryColor
 import com.example.finance_sanbe.SecondaryColor
+import com.example.finance_sanbe.TeamStats
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -70,9 +74,10 @@ fun TeamItems() {
 
     var credits by remember { mutableIntStateOf(0) }
     var priceError by remember { mutableStateOf(false) }
-    var teamList by remember { mutableStateOf<List<Pair<Int, String>>>(emptyList()) }
+    var teamList by remember { mutableStateOf<List<TeamStats>>(emptyList()) }
     var team by remember { mutableStateOf("") }
     var items by remember { mutableStateOf<List<ItemStats>>(emptyList()) }
+    var teamCredits by remember { mutableIntStateOf(0) }
     var expanded by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var isLoadingItems by remember { mutableStateOf(false) }
@@ -101,6 +106,7 @@ fun TeamItems() {
             Log.d("Team selected", "Team selected: $id")
             try{
                 items = NetworkClient.client.get("${NetworkClient.BASE_URL}/teamItems?id=${selectedTeam}").body()
+                teamCredits = NetworkClient.client.get("${NetworkClient.BASE_URL}/teamCredits?id=${selectedTeam}").body()
             } catch (e: Exception) {
                 if (e !is CancellationException) {
                     Log.e("Network error", "Errore ricerca: ${e.message}", e)
@@ -111,92 +117,105 @@ fun TeamItems() {
         }
     }
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(BackgroundColor)
-            .padding(16.dp),
+            .padding(top = 30.dp, bottom = 20.dp, start = 30.dp, end = 30.dp),
         horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Card(
-            colors = CardDefaults.cardColors(containerColor = SecondaryColor),
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(BackgroundColor)
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+    )  {
+        item {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = BackgroundColor),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = "Borsa di Sanbe",
-                    color = PrimaryColor,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 30.dp)
-                )
-                Spacer(modifier = Modifier.padding(top = 30.dp))
-
-                Text(text = "Seleziona Squadra", color = PrimaryColor, fontSize = 18.sp)
-                Spacer(modifier = Modifier.padding(top = 20.dp))
-
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = it }
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    OutlinedTextField(
-                        value = team,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Squadra", color = PrimaryColor, fontSize = 14.sp) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                        modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                            .fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PrimaryColor,
-                            unfocusedBorderColor = Color.Gray,
-                            focusedLabelColor = PrimaryColor,
-                            unfocusedLabelColor = Color.Gray,
-                            focusedTextColor = PrimaryColor,
-                            unfocusedTextColor = PrimaryColor,
-                        ),
+                    Text(
+                        text = "Borsa di Sanbe",
+                        color = PrimaryColor,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(top = 30.dp)
                     )
+                    Spacer(modifier = Modifier.padding(top = 30.dp))
 
-                    ExposedDropdownMenu(
+                    Text(text = "Seleziona Squadra", color = PrimaryColor, fontSize = 18.sp)
+                    Spacer(modifier = Modifier.padding(top = 20.dp))
+
+                    ExposedDropdownMenuBox(
                         expanded = expanded,
-                        onDismissRequest = { expanded = false }
+                        onExpandedChange = { expanded = it }
                     ) {
-                        teamList.forEach { selectionOption ->
-                            DropdownMenuItem(
-                                text = { Text(selectionOption.second) },
-                                onClick = {
-                                    team = selectionOption.second
-                                    selectedTeam = selectionOption.first
-                                    addCredits = addCredits.copy(teamId = selectionOption.first)
-                                    expanded = false
-                                }
-                            )
+                        OutlinedTextField(
+                            value = team,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Squadra", color = PrimaryColor, fontSize = 14.sp) },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                            modifier = Modifier
+                                .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                                .fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = PrimaryColor,
+                                unfocusedBorderColor = Color.Gray,
+                                focusedLabelColor = PrimaryColor,
+                                unfocusedLabelColor = Color.Gray,
+                                focusedTextColor = PrimaryColor,
+                                unfocusedTextColor = PrimaryColor,
+                            ),
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            modifier = Modifier.heightIn(max = 200.dp),
+                        ) {
+                            teamList.forEach { selectionOption ->
+                                DropdownMenuItem(
+                                    text = { Text(selectionOption.name) },
+                                    onClick = {
+                                        team = selectionOption.name
+                                        selectedTeam = selectionOption.teamId
+                                        addCredits = addCredits.copy(teamId = selectionOption.teamId)
+                                        expanded = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }
             }
         }
 
-        //Tabella con gli items
-        Box(Modifier.padding(10.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
-            Text(text = "Oggetti della squadra", color = PrimaryColor, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        item {
+            Card() {
+                Text(text = "Crediti rimanenti: $teamCredits", color = PrimaryColor, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            }
+
+            Box(Modifier
+                .padding(10.dp)
+                .fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Text(text = "Oggetti della squadra", color = PrimaryColor, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            }
+            Spacer(modifier = Modifier.padding(10.dp))
         }
-        Spacer(modifier = Modifier.padding(10.dp))
 
         if(isLoadingItems) {
-            Text(text = "Caricamento in corso...", color = PrimaryColor, fontSize = 16.sp)
+            item {
+                Text(text = "Caricamento in corso...", color = PrimaryColor, fontSize = 16.sp)
+            }
         } else if (items.isNotEmpty()) {
-            LazyColumn(modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 16.dp, start = 30.dp, end = 30.dp)) {
                 item {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(text = "Oggetto", modifier = Modifier.weight(2f), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
@@ -207,7 +226,9 @@ fun TeamItems() {
 
                 items(items) { item ->
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 20.dp, start = 40.dp, end = 40.dp, bottom = 20.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(text = item.name, modifier = Modifier.weight(1f), fontSize = 16.sp, color = PrimaryColor)
@@ -215,21 +236,25 @@ fun TeamItems() {
                     }
                     HorizontalDivider(thickness = 0.5.dp, color = PrimaryColor.copy(alpha = 0.5f))
                 }
-            }
         } else {
-            Text(text = "Nessun articolo disponibile", color = PrimaryColor, fontSize = 16.sp)
+            item {
+                Text(text = "Nessun articolo disponibile", color = PrimaryColor, fontSize = 16.sp)
+            }
         }
 
-        Spacer(modifier = Modifier.padding(top = 30.dp))
+        item {
+            Spacer(modifier = Modifier.padding(top = 30.dp))
+
+            Text(text = "Aggiungi crediti", color = PrimaryColor, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.padding(top = 30.dp))
 
             OutlinedTextField(
-                value = credits.toString(),
+                value = addCredits.credits.toString(),
                 onValueChange = {
                     val newValue = it.filter { char -> char.isDigit() }.toIntOrNull() ?: 0
-                    addCredits = addCredits.copy(credits = newValue)
-                },
+                    addCredits = addCredits.copy(credits = newValue) },
                 shape = RoundedCornerShape(12.dp),
-                label = { Text("0", color = PrimaryColor, fontSize = 14.sp) },
+                label = { Text("Crediti", color = PrimaryColor, fontSize = 14.sp) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 25.dp),
@@ -242,9 +267,17 @@ fun TeamItems() {
                     focusedLabelColor = PrimaryColor,
                     unfocusedLabelColor = PrimaryColor,
                     focusedTextColor = PrimaryColor,
-                    unfocusedTextColor = PrimaryColor,
-                ),
+                    unfocusedTextColor = PrimaryColor
+                )
             )
+            AnimatedVisibility(visible = priceError) {
+                Text(
+                    text = "Valore minore di 0 non valido",
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+                )
+            }
             Spacer(modifier = Modifier.padding(top = 30.dp))
 
             Button(
@@ -277,10 +310,11 @@ fun TeamItems() {
                     disabledContainerColor = SecondaryColor.copy(alpha = 0.5f),
                     disabledContentColor = PrimaryColor.copy(alpha = 0.5f)
                 ),
-                enabled = credits > 0 && (selectedTeam != null),
+                enabled = addCredits.credits > 0 && (selectedTeam != null),
                 shape = RoundedCornerShape(18.dp)
             ) {
                 Text(text = "Aggiungi", fontWeight = FontWeight.Bold, fontSize = 18.sp)
             }
+        }
     }
 }
