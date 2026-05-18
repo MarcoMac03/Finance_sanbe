@@ -271,11 +271,16 @@ fun TeamItems() {
                         }
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = SecondaryColor),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = SecondaryColor,
+                    contentColor = PrimaryColor,
+                    disabledContainerColor = SecondaryColor.copy(alpha = 0.5f),
+                    disabledContentColor = PrimaryColor.copy(alpha = 0.5f)
+                ),
                 enabled = credits > 0 && (selectedTeam != null),
                 shape = RoundedCornerShape(18.dp)
             ) {
-                Text(text = "Aggiungi", color = PrimaryColor, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Text(text = "Aggiungi", fontWeight = FontWeight.Bold, fontSize = 18.sp)
             }
     }
 }

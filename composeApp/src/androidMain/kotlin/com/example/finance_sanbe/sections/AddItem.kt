@@ -198,11 +198,16 @@ fun AddItem() {
                         }
                     }
             },
-            colors = ButtonDefaults.buttonColors(containerColor = SecondaryColor),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = SecondaryColor,
+                contentColor = PrimaryColor,
+                disabledContainerColor = SecondaryColor.copy(alpha = 0.5f),
+                disabledContentColor = PrimaryColor.copy(alpha = 0.5f)
+            ),
             enabled = item.quantity > 0 && item.price >= 0 && item.name.isNotBlank(),
             shape = RoundedCornerShape(18.dp)
         ) {
-            Text(text = "Salva", color = PrimaryColor, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Text(text = "Salva", fontWeight = FontWeight.Bold, fontSize = 18.sp)
         }
     }
 }
