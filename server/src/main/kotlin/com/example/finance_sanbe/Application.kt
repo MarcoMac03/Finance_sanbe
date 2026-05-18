@@ -146,5 +146,30 @@ fun Application.module() {
             }
 
         }
+
+        get("/teams") {
+            val teamList = transaction {
+                Team.select(Team.name).map { row -> row[Team.name] }
+            }
+            call.respond(teamList)
+        }
+
+        get("/teamItems") {
+            val id = call.parameters["id"]?.toIntOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val items = transaction {
+                (TeamItems innerJoin Items).select(Items.id, Items.name, TeamItems.quantity)
+                    .where{(TeamItems.teamId eq id) and (TeamItems.itemId eq Items.id)}.map {row ->
+                        ItemStats(
+                            id = row[Items.id],
+                            name = row[Items.name],
+                            initialPrice = 0,
+                            actualPrice = 0,
+                            initialQuantity = 0,
+                            actualQuantity = row[TeamItems.quantity]
+                        )
+                    }
+            }
+            call.respond(items)
+        }
     }
 }

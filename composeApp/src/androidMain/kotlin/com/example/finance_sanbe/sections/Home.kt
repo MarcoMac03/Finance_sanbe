@@ -66,9 +66,11 @@ fun Home() {
         modifier = Modifier.fillMaxSize().background(BackgroundColor).padding(20.dp, end = 20.dp, top = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Card(Modifier.padding(18.dp).fillMaxWidth()
+        Card(
+            Modifier.padding(18.dp).fillMaxWidth()
             .border(border = BorderStroke(0.dp, color = BackgroundColor), shape = AbsoluteRoundedCornerShape(15.dp)),
-            colors = CardDefaults.cardColors(containerColor = SecondaryColor)) {
+            colors = CardDefaults.cardColors(containerColor = SecondaryColor)
+        ) {
             Text(text = "Benvenuti nel marketplace di San Bernardo",
                 color = PrimaryColor,
                 fontSize = 24.sp,
