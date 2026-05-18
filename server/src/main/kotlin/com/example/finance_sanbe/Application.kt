@@ -149,7 +149,7 @@ fun Application.module() {
 
         get("/teams") {
             val teamList = transaction {
-                Team.select(Team.name).map { row -> row[Team.name] }
+                Team.select(Team.name).map { row -> row[Team.id] to row[Team.name] }
             }
             call.respond(teamList)
         }
