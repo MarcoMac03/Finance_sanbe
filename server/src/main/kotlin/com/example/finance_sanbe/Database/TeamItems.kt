@@ -6,4 +6,6 @@ object TeamItems: Table("TeamItems") {
     val teamId = integer("teamId") references Team.id
     val itemId = integer("itemId") references Items.id
     val quantity = integer("quantity")
+
+    override val primaryKey = PrimaryKey(id)
 }

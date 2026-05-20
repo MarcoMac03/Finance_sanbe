@@ -63,12 +63,12 @@ fun Home() {
         modifier = Modifier
             .fillMaxSize()
             .background(BackgroundColor)
-            .padding(top = 30.dp, bottom = 20.dp, start = 30.dp, end = 30.dp)
+            .padding(top = 30.dp, bottom = 20.dp, start = 50.dp, end = 50.dp)
     ) {
         item {
             Card(
                 Modifier
-                    .padding(18.dp)
+                    .padding(10.dp)
                     .fillMaxWidth()
                     .border(
                         border = BorderStroke(0.dp, color = BackgroundColor),
@@ -90,7 +90,7 @@ fun Home() {
             Box(Modifier
                 .padding(10.dp)
                 .fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text(text = "Lista degli articoli", color = PrimaryColor, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(text = "Lista degli oggetti", color = PrimaryColor, fontSize = 20.sp, fontWeight = FontWeight.Bold)
             }
             Spacer(modifier = Modifier.padding(10.dp))
         }
@@ -104,7 +104,7 @@ fun Home() {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 8.dp),
+                            .padding(bottom = 8.dp, start = 20.dp, end = 20.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(text = "Oggetto", modifier = Modifier.weight(2f), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
@@ -117,8 +117,8 @@ fun Home() {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 10.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                            .padding(top = 10.dp, bottom = 8.dp, start = 20.dp, end = 20.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         Text(text = item.name, modifier = Modifier.weight(1f), fontSize = 16.sp, color = PrimaryColor)
                         Text(text = "${item.actualQuantity}", modifier = Modifier.weight(1f), fontSize = 16.sp, textAlign = TextAlign.End, color = PrimaryColor)

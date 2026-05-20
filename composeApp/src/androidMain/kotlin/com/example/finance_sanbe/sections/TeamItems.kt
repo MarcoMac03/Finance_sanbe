@@ -74,7 +74,7 @@ fun TeamItems() {
 
     var credits by remember { mutableIntStateOf(0) }
     var priceError by remember { mutableStateOf(false) }
-    var teamList by remember { mutableStateOf<List<TeamStats>>(emptyList()) }
+    var teamList by remember { mutableStateOf<List<Pair<Int, String>>>(emptyList()) }
     var team by remember { mutableStateOf("") }
     var items by remember { mutableStateOf<List<ItemStats>>(emptyList()) }
     var teamCredits by remember { mutableIntStateOf(0) }
@@ -178,11 +178,11 @@ fun TeamItems() {
                         ) {
                             teamList.forEach { selectionOption ->
                                 DropdownMenuItem(
-                                    text = { Text(selectionOption.name) },
+                                    text = { Text(selectionOption.second) },
                                     onClick = {
-                                        team = selectionOption.name
-                                        selectedTeam = selectionOption.teamId
-                                        addCredits = addCredits.copy(teamId = selectionOption.teamId)
+                                        team = selectionOption.second
+                                        selectedTeam = selectionOption.first
+                                        addCredits = addCredits.copy(teamId = selectionOption.first)
                                         expanded = false
                                     }
                                 )
@@ -194,7 +194,9 @@ fun TeamItems() {
         }
 
         item {
-            Card() {
+            Box(Modifier.padding(top = 20.dp, bottom = 20.dp, start = 30.dp, end = 30.dp).background(BackgroundColor).fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(text = "Crediti rimanenti: $teamCredits", color = PrimaryColor, fontSize = 20.sp, fontWeight = FontWeight.Bold)
             }
 
@@ -215,7 +217,7 @@ fun TeamItems() {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 8.dp),
+                            .padding(bottom = 8.dp, start = 20.dp, end = 20.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(text = "Oggetto", modifier = Modifier.weight(2f), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
@@ -228,7 +230,7 @@ fun TeamItems() {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 20.dp, start = 40.dp, end = 40.dp, bottom = 20.dp),
+                            .padding(top = 10.dp, start = 30.dp, end = 30.dp, bottom = 10.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(text = item.name, modifier = Modifier.weight(1f), fontSize = 16.sp, color = PrimaryColor)
@@ -283,7 +285,7 @@ fun TeamItems() {
             Button(
                 onClick = {
                     scope.launch {
-                        if (credits <= 0) {
+                        if (addCredits.credits <= 0) {
                             priceError = true
                             return@launch
                         }
@@ -293,7 +295,7 @@ fun TeamItems() {
                                 contentType(ContentType.Application.Json)
                                 setBody(addCredits)
                             }
-                            if (response.status == HttpStatusCode.Created) {
+                            if (response.status == HttpStatusCode.OK) {
                                 Toast.makeText(context, "Crediti aggiunti", Toast.LENGTH_LONG).show()
                                 Log.d("Credits saved", "Credits added correctly")
                                 addCredits = AddCredits()

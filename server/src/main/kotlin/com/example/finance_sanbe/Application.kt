@@ -180,5 +180,17 @@ fun Application.module() {
             }
             call.respond(credits)
         }
+
+        post("/addCredits") {
+            val toAdd = call.receive<AddCredits>()
+            val credits = transaction {
+                Team.update({Team.id eq toAdd.teamId}) { it[Team.credits] = Team.credits + toAdd.credits }
+            }
+            if(credits == 0) {
+                call.respond(HttpStatusCode.InternalServerError)
+                return@post
+            }
+            call.respond(HttpStatusCode.OK)
+        }
     }
 }
