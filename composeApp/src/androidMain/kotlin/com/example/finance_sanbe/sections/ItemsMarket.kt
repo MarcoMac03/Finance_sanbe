@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -32,7 +33,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,7 +46,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.finance_sanbe.ActionType
-import com.example.finance_sanbe.AddCredits
 import com.example.finance_sanbe.BackgroundColor
 import com.example.finance_sanbe.ItemStats
 import com.example.finance_sanbe.MarketAction
@@ -56,11 +55,6 @@ import com.example.finance_sanbe.PrimaryColor
 import com.example.finance_sanbe.SecondaryColor
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
 import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -74,14 +68,14 @@ fun ItemsMarket() {
     var expandedItems by remember { mutableStateOf(false) }
     var expandedActions by remember { mutableStateOf(false) }
     val actionTypes = remember { ActionType.entries }
-    var item by remember { mutableStateOf("") }
+    var item by remember { mutableStateOf(ItemStats()) }
     var action by remember { mutableStateOf("") }
+    var itemName by remember { mutableStateOf("") }
     var teamList by remember { mutableStateOf<List<Pair<Int, String>>>(emptyList()) }
     var itemList by remember { mutableStateOf<List<ItemStats>>(emptyList()) }
     var team by remember { mutableStateOf("") }
     var selectedTeam by remember { mutableStateOf<Int?>(null) }
     var market by remember { mutableStateOf(MarketAction()) }
-    var itemPQ by remember { mutableStateOf(MarketStats())}
     var quantity by remember { mutableIntStateOf(0) }
 
     val scrollState = rememberScrollState()
@@ -99,9 +93,10 @@ fun ItemsMarket() {
     }
 
     LaunchedEffect(expandedItems) {
-        if(expandedItems && itemList.isEmpty()) {
+        if(expandedItems && itemList.isEmpty() && selectedTeam != null && action.isNotEmpty()) {
             try {
-                itemList = NetworkClient.client.get("${NetworkClient.BASE_URL}/itemsAll").body()
+                itemList = NetworkClient.client.get("${NetworkClient.BASE_URL}/itemsByAction/${selectedTeam}/${action}").body()
+                Log.d("Items list", "Items list: ${itemList.size}")
             } catch (e: Exception) {
                 if (e !is CancellationException) {
                     Log.e("Network error", "Errore ricerca: ${e.message}", e)
@@ -110,7 +105,7 @@ fun ItemsMarket() {
         }
     }
 
-    LaunchedEffect(item) {
+    /*LaunchedEffect(item) {
         if(!item.isEmpty() && !action.isEmpty() && selectedTeam != null) {
             try {
                 itemPQ = NetworkClient.client.get("${NetworkClient.BASE_URL}/itemStats/${market.itemId}/${market.type}/${selectedTeam}").body()
@@ -120,7 +115,7 @@ fun ItemsMarket() {
                 }
             }
         }
-    }
+    }*/
 
     Column(
         modifier = Modifier
@@ -187,53 +182,6 @@ fun ItemsMarket() {
         }
         Spacer(modifier = Modifier.padding(top = 20.dp))
 
-        // selezione item
-        Text(text = "Seleziona oggetto", color = PrimaryColor, fontSize = 18.sp)
-        Spacer(modifier = Modifier.padding(top = 10.dp))
-
-        ExposedDropdownMenuBox(
-            expanded = expandedItems,
-            onExpandedChange = { expandedItems = it }
-        ) {
-            OutlinedTextField(
-                value = item,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Oggetto", color = PrimaryColor, fontSize = 14.sp) },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedItems) },
-                modifier = Modifier
-                    .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                    .fillMaxWidth()
-                    .padding(start = 20.dp, end = 20.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = PrimaryColor,
-                    unfocusedBorderColor = Color.Gray,
-                    focusedLabelColor = PrimaryColor,
-                    unfocusedLabelColor = Color.Gray,
-                    focusedTextColor = PrimaryColor,
-                    unfocusedTextColor = PrimaryColor,
-                ),
-            )
-
-            ExposedDropdownMenu(
-                expanded = expandedItems,
-                onDismissRequest = { expandedItems = false },
-                modifier = Modifier.heightIn(max = 200.dp),
-            ) {
-                itemList.forEach { selectionOption ->
-                    DropdownMenuItem(
-                        text = { Text(selectionOption.name) },
-                        onClick = {
-                            item = selectionOption.name
-                            market = market.copy(itemId = selectionOption.id)
-                            expandedItems = false
-                        }
-                    )
-                }
-            }
-        }
-        Spacer(modifier = Modifier.padding(top = 20.dp))
-
         // selezione tipologia di operazione (buy, sell)
         Text(text = "Seleziona operazione", color = PrimaryColor, fontSize = 18.sp)
         Spacer(modifier = Modifier.padding(top = 10.dp))
@@ -281,14 +229,65 @@ fun ItemsMarket() {
         }
         Spacer(modifier = Modifier.padding(top = 20.dp))
 
-        if(!item.isEmpty() && !action.isEmpty() && selectedTeam != null) {
+        if(selectedTeam != null && action.isNotEmpty()) {
+            Text(text = "Seleziona oggetto", color = PrimaryColor, fontSize = 18.sp)
+            Spacer(modifier = Modifier.padding(top = 10.dp))
+
+            ExposedDropdownMenuBox(
+                expanded = expandedItems,
+                onExpandedChange = { expandedItems = it }
+            ) {
+                OutlinedTextField(
+                    value = itemName,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Oggetto", color = PrimaryColor, fontSize = 14.sp) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedItems) },
+                    modifier = Modifier
+                        .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                        .fillMaxWidth()
+                        .padding(start = 20.dp, end = 20.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = PrimaryColor,
+                        unfocusedBorderColor = Color.Gray,
+                        focusedLabelColor = PrimaryColor,
+                        unfocusedLabelColor = Color.Gray,
+                        focusedTextColor = PrimaryColor,
+                        unfocusedTextColor = PrimaryColor,
+                    ),
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expandedItems,
+                    onDismissRequest = { expandedItems = false },
+                    modifier = Modifier.heightIn(max = 200.dp),
+                ) {
+                    itemList.forEach { selectionOption ->
+                        DropdownMenuItem(
+                            text = { Text(selectionOption.name) },
+                            onClick = {
+                                Log.d("Item selected", "Item selected for ${action}: ${selectionOption}")
+                                itemName = selectionOption.name
+                                market = market.copy(itemId = selectionOption.id)
+                                expandedItems = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
+        Spacer(modifier = Modifier.padding(top = 20.dp))
+
+        if(itemName.isNotBlank() && action.isNotEmpty() && selectedTeam != null) {
             Box(Modifier
-                .padding(top = 20.dp, bottom = 20.dp, start = 30.dp, end = 30.dp)
+                .padding(top = 10.dp, bottom = 20.dp, start = 30.dp, end = 30.dp)
                 .background(BackgroundColor)
                 .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "Prezzo: ${itemPQ.price * itemPQ.quantity}", color = PrimaryColor, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                contentAlignment = Alignment.Center,
+
+                ) {
+                Text(text = "Prezzo: ${item.actualPrice * item.actualQuantity}", color = PrimaryColor, fontSize = 20.sp, fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.CenterStart))
 
                 OutlinedTextField(
                     value = quantity.toString(),
@@ -307,7 +306,7 @@ fun ItemsMarket() {
                             ) { Icon(imageVector = Icons.Default.KeyboardArrowDown, contentDescription = "Diminuisci", tint = if(quantity > 1) PrimaryColor else Color.Gray) }
                             IconButton(
                                 onClick = {
-                                    if(quantity<itemPQ.quantity) {
+                                    if(quantity < item.actualQuantity) {
                                         quantity++
                                         market = market.copy(quantity = quantity)
                                     }
@@ -315,7 +314,9 @@ fun ItemsMarket() {
                             ) { Icon(imageVector = Icons.Default.KeyboardArrowUp, contentDescription = "Aumenta", tint = PrimaryColor) }
                         }
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .width(120.dp)
+                        .align(Alignment.CenterEnd),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = PrimaryColor,
                         unfocusedBorderColor = Color.Gray,
@@ -324,6 +325,7 @@ fun ItemsMarket() {
                     )
                 )
             }
+            Spacer(modifier = Modifier.padding(top = 20.dp))
         }
 
         Button(
