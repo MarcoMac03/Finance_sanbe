@@ -94,7 +94,7 @@ fun Application.module() {
         // route to buy or sell an item
         post("/market") {
             val action = call.receive<MarketAction>()
-            if(action.type == ActionType.BUY) {
+            if(action.type == ActionType.COMPRA) {
                 val actualQuantity = transaction {
                     val q = Items.select(Items.actualQuantity).where{Items.id eq action.itemId}
                     q.first()[Items.actualQuantity]
@@ -172,7 +172,7 @@ fun Application.module() {
             call.respond(items)
         }
 
-        get("/teamCredits") {
+        get("/teamCredits/{id}") {
             val id = call.parameters["id"]?.toIntOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest)
             val credits = transaction {
                 Team.select(Team.credits)
@@ -191,6 +191,41 @@ fun Application.module() {
                 return@post
             }
             call.respond(HttpStatusCode.OK)
+        }
+
+        get("/itemStats/{itemId}/{action}/{teamId}") {
+            val itemId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val action = call.parameters["action"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+            if(action != "COMPRA" && action != "VENDI") return@get call.respond(HttpStatusCode.BadRequest)
+            if(action == "COMPRA") {
+                val stats = transaction {
+                     Items.select(Items.actualPrice, Items.actualQuantity)
+                        .where{ Items.id eq itemId }.map { row ->
+                            MarketStats(
+                                price = row[Items.actualPrice],
+                                quantity = row[Items.actualQuantity]
+                            )
+                        }
+                }
+                if(stats.isEmpty()) return@get call.respond(HttpStatusCode.NotFound)
+                call.respond(stats)
+                return@get
+            } else {
+                val teamId = call.parameters["teamId"]?.toIntOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest)
+                val stats = transaction {
+                    val price = Items.select(Items.actualPrice)
+                        .where{ Items.id eq itemId }.first()[Items.actualPrice]
+                    val quantity = TeamItems.select(TeamItems.quantity)
+                        .where{ (TeamItems.itemId eq itemId) and (TeamItems.teamId eq teamId) }
+                        .map { it[TeamItems.quantity] }.firstOrNull() ?: 0
+                    MarketStats(
+                        price = price,
+                        quantity = quantity
+                    )
+                }
+                call.respond(stats)
+                return@get
+            }
         }
     }
 }

@@ -54,7 +54,6 @@ import com.example.finance_sanbe.ItemStats
 import com.example.finance_sanbe.NetworkClient
 import com.example.finance_sanbe.PrimaryColor
 import com.example.finance_sanbe.SecondaryColor
-import com.example.finance_sanbe.TeamStats
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -72,7 +71,7 @@ fun TeamItems() {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    var credits by remember { mutableIntStateOf(0) }
+    var trigger by remember { mutableStateOf(false) }
     var priceError by remember { mutableStateOf(false) }
     var teamList by remember { mutableStateOf<List<Pair<Int, String>>>(emptyList()) }
     var team by remember { mutableStateOf("") }
@@ -100,7 +99,7 @@ fun TeamItems() {
         }
     }
 
-    LaunchedEffect(selectedTeam) {
+    LaunchedEffect(selectedTeam, trigger) {
         selectedTeam?.let { id ->
             isLoadingItems = true
             Log.d("Team selected", "Team selected: $id")
@@ -299,6 +298,7 @@ fun TeamItems() {
                                 Toast.makeText(context, "Crediti aggiunti", Toast.LENGTH_LONG).show()
                                 Log.d("Credits saved", "Credits added correctly")
                                 addCredits = AddCredits()
+                                trigger = !trigger
                             }
                         } catch (e: Exception) {
                             Toast.makeText(context, "Can't connect to server", Toast.LENGTH_SHORT).show()
