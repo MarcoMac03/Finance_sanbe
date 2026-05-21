@@ -10,4 +10,7 @@ data class MarketAction(
     val type: ActionType = ActionType.COMPRA,
     val quantity: Int = -1,
     val price: Int = -1
-)
+) {
+    val isValid: Boolean
+        get() = quantity > 0 && price > 0 && itemId > 0 && teamId > 0
+}

@@ -49,7 +49,6 @@ import com.example.finance_sanbe.ActionType
 import com.example.finance_sanbe.BackgroundColor
 import com.example.finance_sanbe.ItemStats
 import com.example.finance_sanbe.MarketAction
-import com.example.finance_sanbe.MarketStats
 import com.example.finance_sanbe.NetworkClient
 import com.example.finance_sanbe.PrimaryColor
 import com.example.finance_sanbe.SecondaryColor
@@ -77,6 +76,7 @@ fun ItemsMarket() {
     var selectedTeam by remember { mutableStateOf<Int?>(null) }
     var market by remember { mutableStateOf(MarketAction()) }
     var quantity by remember { mutableIntStateOf(0) }
+    //var price by remember { mutableIntStateOf(0) }
 
     val scrollState = rememberScrollState()
 
@@ -92,7 +92,7 @@ fun ItemsMarket() {
         }
     }
 
-    LaunchedEffect(expandedItems) {
+    LaunchedEffect(expandedItems, action) {
         if(expandedItems && itemList.isEmpty() && selectedTeam != null && action.isNotEmpty()) {
             try {
                 itemList = NetworkClient.client.get("${NetworkClient.BASE_URL}/itemsByAction/${selectedTeam}/${action}").body()
@@ -173,6 +173,8 @@ fun ItemsMarket() {
                         onClick = {
                             team = selectionOption.second
                             selectedTeam = selectionOption.first
+                            itemList = emptyList()
+                            itemName = ""
                             market = market.copy(teamId = selectionOption.first)
                             expandedTeam = false
                         }
@@ -220,6 +222,8 @@ fun ItemsMarket() {
                         text = { Text(selectionOption.name) },
                         onClick = {
                             action = selectionOption.name
+                            itemList = emptyList()
+                            itemName = ""
                             market = market.copy(type = selectionOption)
                             expandedActions = false
                         }
@@ -269,6 +273,8 @@ fun ItemsMarket() {
                                 Log.d("Item selected", "Item selected for ${action}: ${selectionOption}")
                                 itemName = selectionOption.name
                                 market = market.copy(itemId = selectionOption.id)
+                                item = selectionOption
+                                market = market.copy(price = quantity * market.price)
                                 expandedItems = false
                             }
                         )
@@ -286,7 +292,7 @@ fun ItemsMarket() {
                 contentAlignment = Alignment.Center,
 
                 ) {
-                Text(text = "Prezzo: ${item.actualPrice * item.actualQuantity}", color = PrimaryColor, fontSize = 20.sp, fontWeight = FontWeight.Bold,
+                Text(text = "Prezzo: ${market.price}", color = PrimaryColor, fontSize = 20.sp, fontWeight = FontWeight.Bold,
                     modifier = Modifier.align(Alignment.CenterStart))
 
                 OutlinedTextField(
@@ -295,12 +301,13 @@ fun ItemsMarket() {
                     readOnly = true,
                     label = { Text(text = "Quantità", color = PrimaryColor, fontSize = 14.sp) },
                     trailingIcon = {
-                        Row(Modifier.padding(end = 4.dp)) {
+                        Row(Modifier.padding(end = 2.dp)) {
                             IconButton(
                                 onClick = {
                                     if(quantity > 0) {
                                         quantity--
                                         market = market.copy(quantity = quantity)
+                                        market = market.copy(price = quantity * item.actualPrice)
                                     }
                                 }
                             ) { Icon(imageVector = Icons.Default.KeyboardArrowDown, contentDescription = "Diminuisci", tint = if(quantity > 1) PrimaryColor else Color.Gray) }
@@ -309,13 +316,14 @@ fun ItemsMarket() {
                                     if(quantity < item.actualQuantity) {
                                         quantity++
                                         market = market.copy(quantity = quantity)
+                                        market = market.copy(price = quantity * item.actualPrice)
                                     }
                                 }
                             ) { Icon(imageVector = Icons.Default.KeyboardArrowUp, contentDescription = "Aumenta", tint = PrimaryColor) }
                         }
                     },
                     modifier = Modifier
-                        .width(120.dp)
+                        .width(140.dp)
                         .align(Alignment.CenterEnd),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = PrimaryColor,
@@ -338,6 +346,14 @@ fun ItemsMarket() {
                     try {
                         Log.d("Credits saved", "Sending credits to server")
                         Toast.makeText(context, "Invio richiesta con: ${market.type}, ${market.teamId}, ${market.itemId}, ${market.quantity}", Toast.LENGTH_LONG).show()
+                        market = MarketAction()
+                        item = ItemStats()
+                        quantity = 0
+                        selectedTeam = null
+                        team = ""
+                        action = ""
+                        itemName = ""
+
                         /*val response = NetworkClient.client.post("${NetworkClient.BASE_URL}/addCredits") {
                             contentType(ContentType.Application.Json)
                             setBody(addCredits)
@@ -360,7 +376,7 @@ fun ItemsMarket() {
                 disabledContainerColor = SecondaryColor.copy(alpha = 0.5f),
                 disabledContentColor = PrimaryColor.copy(alpha = 0.5f)
             ),
-            //enabled = addCredits.credits > 0 && (selectedTeam != null),
+            enabled = market.isValid,
             shape = RoundedCornerShape(18.dp)
         ) {
             Text(text = "${market.type}", fontWeight = FontWeight.Bold, fontSize = 18.sp)
