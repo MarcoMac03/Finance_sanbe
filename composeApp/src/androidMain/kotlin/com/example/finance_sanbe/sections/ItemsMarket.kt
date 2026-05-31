@@ -2,6 +2,7 @@ package com.example.finance_sanbe.sections
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -54,6 +56,11 @@ import com.example.finance_sanbe.PrimaryColor
 import com.example.finance_sanbe.SecondaryColor
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
 import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -76,7 +83,10 @@ fun ItemsMarket() {
     var selectedTeam by remember { mutableStateOf<Int?>(null) }
     var market by remember { mutableStateOf(MarketAction()) }
     var quantity by remember { mutableIntStateOf(0) }
-    //var price by remember { mutableIntStateOf(0) }
+    var teamError by remember { mutableStateOf(false) }
+    var actionError by remember { mutableStateOf(false) }
+    var quantityError by remember { mutableStateOf(false) }
+    var itemError by remember { mutableStateOf(false) }
 
     val scrollState = rememberScrollState()
 
@@ -182,6 +192,14 @@ fun ItemsMarket() {
                 }
             }
         }
+        AnimatedVisibility(visible = teamError) {
+            Text(
+                text = "Seleziona una squadra",
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+            )
+        }
         Spacer(modifier = Modifier.padding(top = 20.dp))
 
         // selezione tipologia di operazione (buy, sell)
@@ -230,6 +248,14 @@ fun ItemsMarket() {
                     )
                 }
             }
+        }
+        AnimatedVisibility(visible = actionError) {
+            Text(
+                text = "Seleziona una operazione",
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+            )
         }
         Spacer(modifier = Modifier.padding(top = 20.dp))
 
@@ -282,6 +308,14 @@ fun ItemsMarket() {
                 }
             }
         }
+        AnimatedVisibility(visible = itemError) {
+            Text(
+                text = "Seleziona un oggetto",
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+            )
+        }
         Spacer(modifier = Modifier.padding(top = 20.dp))
 
         if(itemName.isNotBlank() && action.isNotEmpty() && selectedTeam != null) {
@@ -333,37 +367,62 @@ fun ItemsMarket() {
                     )
                 )
             }
+            AnimatedVisibility(visible = quantityError) {
+                Text(
+                    text = "Seleziona una quantità",
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+                )
+            }
             Spacer(modifier = Modifier.padding(top = 20.dp))
         }
 
         Button(
             onClick = {
                 scope.launch {
-                    /*if (addCredits.credits <= 0) {
-                        priceError = true
+                    if (team.isEmpty()) {
+                        teamError = true
                         return@launch
-                    }*/
+                    }
+                    if (action.isEmpty()) {
+                        actionError = true
+                        return@launch
+                    }
+                    if (itemName.isEmpty()) {
+                        itemError = true
+                        return@launch
+                    }
+                    if (quantity == 0) {
+                        quantityError = true
+                        return@launch
+                    }
                     try {
                         Log.d("Credits saved", "Sending credits to server")
-                        Toast.makeText(context, "Invio richiesta con: ${market.type}, ${market.teamId}, ${market.itemId}, ${market.quantity}", Toast.LENGTH_LONG).show()
+                        /*Toast.makeText(context, "Invio richiesta con: ${market.type}, ${market.teamId}, ${market.itemId}, ${market.quantity}", Toast.LENGTH_LONG).show()
                         market = MarketAction()
                         item = ItemStats()
                         quantity = 0
                         selectedTeam = null
                         team = ""
                         action = ""
-                        itemName = ""
+                        itemName = ""*/
 
-                        /*val response = NetworkClient.client.post("${NetworkClient.BASE_URL}/addCredits") {
+                        val response = NetworkClient.client.post("${NetworkClient.BASE_URL}/market") {
                             contentType(ContentType.Application.Json)
-                            setBody(addCredits)
+                            setBody(market)
                         }
                         if (response.status == HttpStatusCode.OK) {
                             Toast.makeText(context, "Crediti aggiunti", Toast.LENGTH_LONG).show()
                             Log.d("Credits saved", "Credits added correctly")
                             market = MarketAction()
-                            trigger = !trigger
-                        }*/
+                            item = ItemStats()
+                            quantity = 0
+                            selectedTeam = null
+                            team = ""
+                            action = ""
+                            itemName = ""
+                        }
                     } catch (e: Exception) {
                         Toast.makeText(context, "Can't connect to server", Toast.LENGTH_SHORT).show()
                         Log.e("Network error", "Errore nella post: ${e.localizedMessage}")
