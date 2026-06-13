@@ -197,12 +197,12 @@ fun Application.module() {
         }
 
         get("/itemsByAction/{teamId}/{action}") {
-            //val itemId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val teamId = call.parameters["teamId"]?.toIntOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest)
             val action = call.parameters["action"] ?: return@get call.respond(HttpStatusCode.BadRequest)
             if(action != "COMPRA" && action != "VENDI") return@get call.respond(HttpStatusCode.BadRequest)
             if(action == "COMPRA") {
                 val stats = transaction {
-                     Items.select(Items.actualPrice, Items.actualQuantity, Items.id, Items.name)
+                     val items = Items.select(Items.actualPrice, Items.actualQuantity, Items.id, Items.name)
                         .map { row ->
                             ItemStats(
                                 id= row[Items.id],
@@ -211,12 +211,14 @@ fun Application.module() {
                                 actualQuantity = row[Items.actualQuantity]
                             )
                         }
+                     val credits = Team.select(Team.credits).where { (Team.id eq teamId) }.map { row -> ItemStats(maxPrice = row[Team.credits]) }
+                     items + credits
                 }
                 if(stats.isEmpty()) return@get call.respond(HttpStatusCode.NotFound)
                 call.respond(stats)
                 return@get
             } else {
-                val teamId = call.parameters["teamId"]?.toIntOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest)
+                //val teamId = call.parameters["teamId"]?.toIntOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest)
                 val stats = transaction {
                      (Items innerJoin TeamItems).select(Items.actualPrice, Items.id, Items.name, TeamItems.quantity)
                         .where{ (Items.id eq TeamItems.itemId) and (TeamItems.teamId eq teamId) and (TeamItems.quantity greater 0) }.map { row ->

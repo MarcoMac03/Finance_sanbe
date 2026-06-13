@@ -106,13 +106,7 @@ fun TeamItems() {
             Log.d("Team selected", "Team selected: $id")
             try{
                 items = NetworkClient.client.get("${NetworkClient.BASE_URL}/teamItems?id=${selectedTeam}").body()
-                Log.d("Items loaded", "Items loaded: ${items.size}")
-                println("Items loaded: ${items.size}")
-                //System.out.println("Items loaded: ${items.size}")
                 teamCredits = NetworkClient.client.get("${NetworkClient.BASE_URL}/teamCredits?id=${selectedTeam}").body()
-                Log.d("Credits loaded", "Team credits: ${teamCredits}")
-                println("Credits loaded: ${teamCredits}")
-                //System.out.println("Credits loaded: ${teamCredits}")
             } catch (e: Exception) {
                 if (e !is CancellationException) {
                     Log.e("Network error", "Errore ricerca: ${e.message}", e)

@@ -347,7 +347,7 @@ fun ItemsMarket() {
                             ) { Icon(imageVector = Icons.Default.KeyboardArrowDown, contentDescription = "Diminuisci", tint = if(quantity > 1) PrimaryColor else Color.Gray) }
                             IconButton(
                                 onClick = {
-                                    if(quantity < item.actualQuantity) {
+                                    if(quantity < item.actualQuantity && (action == "VENDI" || (item.maxPrice != null && market.price < item.maxPrice!!))) {
                                         quantity++
                                         market = market.copy(quantity = quantity)
                                         market = market.copy(price = quantity * item.actualPrice)
@@ -413,8 +413,8 @@ fun ItemsMarket() {
                             setBody(market)
                         }
                         if (response.status == HttpStatusCode.OK) {
-                            Toast.makeText(context, "Crediti aggiunti", Toast.LENGTH_LONG).show()
-                            Log.d("Credits saved", "Credits added correctly")
+                            Toast.makeText(context, "Operazione avvenuta con successo", Toast.LENGTH_LONG).show()
+                            Log.d("Operation executed", "operation executed correctly")
                             market = MarketAction()
                             item = ItemStats()
                             quantity = 0

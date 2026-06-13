@@ -9,5 +9,6 @@ data class ItemStats (
     val initialPrice: Int? = null,
     val actualPrice: Int = -1,
     val initialQuantity: Int? = null,
-    val actualQuantity: Int = -1
+    val actualQuantity: Int = -1,
+    val maxPrice: Int? = null
 )
