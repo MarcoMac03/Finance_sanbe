@@ -100,12 +100,19 @@ fun TeamItems() {
     }
 
     LaunchedEffect(selectedTeam, trigger) {
+
         selectedTeam?.let { id ->
             isLoadingItems = true
             Log.d("Team selected", "Team selected: $id")
             try{
                 items = NetworkClient.client.get("${NetworkClient.BASE_URL}/teamItems?id=${selectedTeam}").body()
+                Log.d("Items loaded", "Items loaded: ${items.size}")
+                println("Items loaded: ${items.size}")
+                //System.out.println("Items loaded: ${items.size}")
                 teamCredits = NetworkClient.client.get("${NetworkClient.BASE_URL}/teamCredits?id=${selectedTeam}").body()
+                Log.d("Credits loaded", "Team credits: ${teamCredits}")
+                println("Credits loaded: ${teamCredits}")
+                //System.out.println("Credits loaded: ${teamCredits}")
             } catch (e: Exception) {
                 if (e !is CancellationException) {
                     Log.e("Network error", "Errore ricerca: ${e.message}", e)
@@ -115,6 +122,7 @@ fun TeamItems() {
             }
         }
     }
+    Log.e("TEST", "Problema con Log.d")
 
     LazyColumn(
         modifier = Modifier
@@ -192,13 +200,17 @@ fun TeamItems() {
             }
         }
 
-        item {
-            Box(Modifier.padding(top = 20.dp, bottom = 20.dp, start = 30.dp, end = 30.dp).background(BackgroundColor).fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "Crediti rimanenti: $teamCredits", color = PrimaryColor, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        if(selectedTeam != null) {
+            item {
+                Box(Modifier.padding(top = 20.dp, bottom = 20.dp, start = 30.dp, end = 30.dp).background(BackgroundColor).fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "Crediti rimanenti: $teamCredits", color = PrimaryColor, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
             }
+        }
 
+        item {
             Box(Modifier
                 .padding(10.dp)
                 .fillMaxWidth(), contentAlignment = Alignment.Center) {
