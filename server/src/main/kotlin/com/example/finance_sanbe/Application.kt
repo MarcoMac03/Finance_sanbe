@@ -202,7 +202,7 @@ fun Application.module() {
             if(action != "COMPRA" && action != "VENDI") return@get call.respond(HttpStatusCode.BadRequest)
             if(action == "COMPRA") {
                 val stats = transaction {
-                     val items = Items.select(Items.actualPrice, Items.actualQuantity, Items.id, Items.name)
+                     Items.select(Items.actualPrice, Items.actualQuantity, Items.id, Items.name)
                         .map { row ->
                             ItemStats(
                                 id= row[Items.id],
@@ -211,8 +211,6 @@ fun Application.module() {
                                 actualQuantity = row[Items.actualQuantity]
                             )
                         }
-                     val credits = Team.select(Team.credits).where { (Team.id eq teamId) }.map { row -> ItemStats(maxPrice = row[Team.credits]) }
-                     items + credits
                 }
                 if(stats.isEmpty()) return@get call.respond(HttpStatusCode.NotFound)
                 call.respond(stats)
