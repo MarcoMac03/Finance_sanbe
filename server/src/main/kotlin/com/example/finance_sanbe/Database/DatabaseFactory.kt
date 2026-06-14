@@ -58,6 +58,24 @@ object DatabaseFactory {
         transaction {
             SchemaUtils.create(Items, Team, TeamItems)
 
+            if (!TeamItems.selectAll().empty()) {
+                TeamItems.deleteAll()
+                println("Inserimento manuale")
+                //val initTeamItems = listOf(
+                //    TeamItem(1, 1, 1, 0),
+                //    TeamItem(1, 2, 1, 0),
+                //    TeamItem(1, 1, 2, 0),
+                //    TeamItem(1, 2, 2, 0),
+                //)
+//
+                //TeamItems.batchInsert(initTeamItems) { teamItem ->
+                //    this[TeamItems.id] = teamItem.id
+                //    this[TeamItems.itemId] = teamItem.itemId
+                //    this[TeamItems.teamId] = teamItem.teamId
+                //    this[TeamItems.quantity] = teamItem.quantity
+                //}
+            }
+
             if (!Items.selectAll().empty()) {
                 Items.deleteAll()
                 //println("Inserimento manuale")
@@ -109,22 +127,7 @@ object DatabaseFactory {
                     it[credits] = 0
                 }
             }
-            if (!TeamItems.selectAll().empty()) {
-                println("Inserimento manuale")
-                //val initTeamItems = listOf(
-                //    TeamItem(1, 1, 1, 0),
-                //    TeamItem(1, 2, 1, 0),
-                //    TeamItem(1, 1, 2, 0),
-                //    TeamItem(1, 2, 2, 0),
-                //)
-//
-                //TeamItems.batchInsert(initTeamItems) { teamItem ->
-                //    this[TeamItems.id] = teamItem.id
-                //    this[TeamItems.itemId] = teamItem.itemId
-                //    this[TeamItems.teamId] = teamItem.teamId
-                //    this[TeamItems.quantity] = teamItem.quantity
-                //}
-            }
+
         }
     }
 
