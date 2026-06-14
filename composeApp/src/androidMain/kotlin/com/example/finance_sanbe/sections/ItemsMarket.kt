@@ -424,8 +424,7 @@ fun ItemsMarket() {
                         if(response.status == HttpStatusCode.BadRequest && response.body<String>() == "Non abbastanza crediti") {
                             creditsError = true
                             quantity = 0
-                        }
-                        if (response.status == HttpStatusCode.OK) {
+                        } else if (response.status == HttpStatusCode.OK) {
                             Toast.makeText(context, "Operazione avvenuta con successo", Toast.LENGTH_LONG).show()
                             Log.d("Operation executed", "operation executed correctly")
                             market = MarketAction()
@@ -435,6 +434,8 @@ fun ItemsMarket() {
                             team = ""
                             action = ""
                             itemName = ""
+                        } else {
+                            Toast.makeText(context, response.body<String>(), Toast.LENGTH_LONG).show()
                         }
                     } catch (e: Exception) {
                         Toast.makeText(context, "Can't connect to server", Toast.LENGTH_SHORT).show()

@@ -129,7 +129,7 @@ fun Application.module() {
                 call.respond(HttpStatusCode.OK)
             } else {
                 val teamQuantity = transaction {
-                    (Items innerJoin TeamItems innerJoin Team).select(TeamItems.quantity).where{ (Items.id eq action.teamId) and (Team.id eq action.teamId)}.first()[TeamItems.quantity]
+                    TeamItems.select(TeamItems.quantity).where{ (TeamItems.teamId eq action.teamId) and (TeamItems.itemId eq action.itemId)}.first()[TeamItems.quantity]
                 }
                 if(teamQuantity < action.quantity) {
                     call.respond(HttpStatusCode.Conflict, "Mismatch tra quantità richiesta e disponibile nella squadra")
