@@ -347,7 +347,7 @@ fun ItemsMarket() {
                             ) { Icon(imageVector = Icons.Default.KeyboardArrowDown, contentDescription = "Diminuisci", tint = if(quantity > 1) PrimaryColor else Color.Gray) }
                             IconButton(
                                 onClick = {
-                                    if(quantity < item.actualQuantity && (action == "VENDI" || (item.maxPrice != null && market.price < item.maxPrice!!))) {
+                                    if(quantity < item.actualQuantity) {
                                         quantity++
                                         market = market.copy(quantity = quantity)
                                         market = market.copy(price = quantity * item.actualPrice)
