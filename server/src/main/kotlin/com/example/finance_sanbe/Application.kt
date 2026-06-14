@@ -111,7 +111,7 @@ fun Application.module() {
                     val q = Team.select(Team.credits).where{Team.id eq action.teamId}
                     q.first()[Team.credits]
                 }
-                if(teamCredits < (action.quantity * action.price)) {
+                if(teamCredits < action.price) {
                     call.respond(HttpStatusCode.BadRequest, "Non abbastanza crediti")
                     return@post
                 }

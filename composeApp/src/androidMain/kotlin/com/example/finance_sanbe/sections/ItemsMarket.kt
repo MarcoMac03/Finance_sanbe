@@ -86,6 +86,7 @@ fun ItemsMarket() {
     var teamError by remember { mutableStateOf(false) }
     var actionError by remember { mutableStateOf(false) }
     var quantityError by remember { mutableStateOf(false) }
+    var creditsError by remember { mutableStateOf(false) }
     var itemError by remember { mutableStateOf(false) }
 
     val scrollState = rememberScrollState()
@@ -375,6 +376,14 @@ fun ItemsMarket() {
                     modifier = Modifier.padding(start = 4.dp, top = 4.dp)
                 )
             }
+            AnimatedVisibility(visible = creditsError) {
+                Text(
+                    text = "Crediti insufficienti",
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+                )
+            }
             Spacer(modifier = Modifier.padding(top = 20.dp))
         }
 
@@ -411,6 +420,10 @@ fun ItemsMarket() {
                         val response = NetworkClient.client.post("${NetworkClient.BASE_URL}/market") {
                             contentType(ContentType.Application.Json)
                             setBody(market)
+                        }
+                        if(response.status == HttpStatusCode.BadRequest && response.body<String>() == "Non abbastanza crediti") {
+                            creditsError = true
+                            quantity = 0
                         }
                         if (response.status == HttpStatusCode.OK) {
                             Toast.makeText(context, "Operazione avvenuta con successo", Toast.LENGTH_LONG).show()
