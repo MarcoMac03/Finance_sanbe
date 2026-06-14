@@ -1,8 +1,6 @@
 package com.example.finance_sanbe.Database
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import com.example.finance_sanbe.ItemStats
-import com.example.finance_sanbe.TeamItem
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -60,50 +58,72 @@ object DatabaseFactory {
         transaction {
             SchemaUtils.create(Items, Team, TeamItems)
 
-            if (Items.selectAll().empty()) {
-                println("Inserimento manuale")
-                val initItems = listOf(
-                    ItemStats(1, "cartone", 10, 10, 3, 3),
-                    ItemStats(2, "scotch", 3, 3, 200, 200),
-                )
-
-                Items.batchInsert(initItems) { item ->
-                    this[Items.id] = item.id
-                    this[Items.name] = item.name
-                    this[Items.initialPrice] = item.initialPrice
-                    this[Items.actualPrice] = item.actualPrice
-                    this[Items.initialQuantity] = item.initialQuantity
-                    this[Items.actualQuantity] = item.actualQuantity
-                }
+            if (!Items.selectAll().empty()) {
+                Items.deleteAll()
+                //println("Inserimento manuale")
+                //val initItems = listOf(
+                //    ItemStats(1, "cartone", 10, 10, 3, 3),
+                //    ItemStats(2, "scotch", 3, 3, 200, 200),
+                //)
+//
+                //Items.batchInsert(initItems) { item ->
+                //    this[Items.id] = item.id
+                //    this[Items.name] = item.name
+                //    this[Items.initialPrice] = item.initialPrice
+                //    this[Items.actualPrice] = item.actualPrice
+                //    this[Items.initialQuantity] = item.initialQuantity
+                //    this[Items.actualQuantity] = item.actualQuantity
+                //}
             }
-            if (Team.selectAll().empty()) {
-                println("Inserimento User")
+            if (!Team.selectAll().empty()) {
+                Team.deleteAll()
+                println("Inserimento Teams")
                 Team.insert {
                     it[id] = 1
                     it[name] = "Rossi"
-                    it[credits] = 100
+                    it[credits] = 0
                 }
                 Team.insert {
                     it[id] = 2
                     it[name] = "Gialli"
-                    it[credits] = 20
+                    it[credits] = 0
+                }
+                Team.insert {
+                    it[id] = 3
+                    it[name] = "Blu"
+                    it[credits] = 0
+                }
+                Team.insert {
+                    it[id] = 4
+                    it[name] = "Fucsia"
+                    it[credits] = 0
+                }
+                Team.insert {
+                    it[id] = 5
+                    it[name] = "Verdi"
+                    it[credits] = 0
+                }
+                Team.insert {
+                    it[id] = 6
+                    it[name] = "Azzurri"
+                    it[credits] = 0
                 }
             }
-            if (TeamItems.selectAll().empty()) {
+            if (!TeamItems.selectAll().empty()) {
                 println("Inserimento manuale")
-                val initTeamItems = listOf(
-                    TeamItem(1, 1, 1, 2),
-                    TeamItem(1, 2, 1, 0),
-                    TeamItem(1, 1, 2, 0),
-                    TeamItem(1, 2, 2, 20),
-                )
-
-                TeamItems.batchInsert(initTeamItems) { teamItem ->
-                    this[TeamItems.id] = teamItem.id
-                    this[TeamItems.itemId] = teamItem.itemId
-                    this[TeamItems.teamId] = teamItem.teamId
-                    this[TeamItems.quantity] = teamItem.quantity
-                }
+                //val initTeamItems = listOf(
+                //    TeamItem(1, 1, 1, 0),
+                //    TeamItem(1, 2, 1, 0),
+                //    TeamItem(1, 1, 2, 0),
+                //    TeamItem(1, 2, 2, 0),
+                //)
+//
+                //TeamItems.batchInsert(initTeamItems) { teamItem ->
+                //    this[TeamItems.id] = teamItem.id
+                //    this[TeamItems.itemId] = teamItem.itemId
+                //    this[TeamItems.teamId] = teamItem.teamId
+                //    this[TeamItems.quantity] = teamItem.quantity
+                //}
             }
         }
     }
