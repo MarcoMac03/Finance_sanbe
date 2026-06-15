@@ -216,7 +216,6 @@ fun Application.module() {
                 call.respond(stats)
                 return@get
             } else {
-                //val teamId = call.parameters["teamId"]?.toIntOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest)
                 val stats = transaction {
                      (Items innerJoin TeamItems).select(Items.actualPrice, Items.id, Items.name, TeamItems.quantity)
                         .where{ (Items.id eq TeamItems.itemId) and (TeamItems.teamId eq teamId) and (TeamItems.quantity greater 0) }.map { row ->
